@@ -3,12 +3,12 @@
 </script>
 
 <aside>
-  sdfg
+  tbd
 </aside>
 
 <style>
   aside {
-    background-color: red;
+    background-color: var(--dark-gray);
     width: 20rem;
     padding: 2rem;
   }

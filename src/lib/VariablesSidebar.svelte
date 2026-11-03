@@ -3,12 +3,12 @@
 </script>
 
 <aside>
-  dfgh
+  tbd
 </aside>
 
 <style>
   aside {
-    background-color: blue;
+    background-color: var(--dark-gray);
     width: 20rem;
     padding: 2rem;
   }
