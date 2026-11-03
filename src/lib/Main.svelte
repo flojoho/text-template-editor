@@ -3,13 +3,15 @@
   import VariablesSidebar from "./VariablesSidebar.svelte";
   import InputTextarea from "./InputTextarea.svelte";
   import OutputTextarea from "./OutputTextarea.svelte";
+
+  let template = $state('');
 </script>
 
 <div class="container">
   <ProjectsSidebar />
   <main>
-    <InputTextarea />
-    <OutputTextarea />
+    <InputTextarea bind:value={template} />
+    <OutputTextarea value={template} />
   </main>
   <VariablesSidebar />
 </div>

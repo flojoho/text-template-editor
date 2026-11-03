@@ -1,8 +1,8 @@
 <script lang="ts">
-  
+  let { value = $bindable('') } = $props();
 </script>
 
-<textarea>
+<textarea bind:value={value}>
 </textarea>
 
 <style>
