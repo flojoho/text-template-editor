@@ -1,19 +1,21 @@
 <script lang="ts">
-  import type Variable from './Variable';
-  
-  let { variables = $bindable([]) }: {
-    variables: Variable[]
+  let {
+    variableNames,
+    variableValues = $bindable({})
+  }: {
+    variableNames: string[],
+    variableValues: Record<string, string>
   } = $props();
 </script>
 
 <aside>
-  {#each variables as variable}
+  {#each variableNames as name}
     <div>
       <div>
-        {variable.name}
+        {name}
       </div>
       <div>
-        <input value={variable.value} />
+        <input bind:value={variableValues[name]} />
       </div>
     </div>
   {/each}

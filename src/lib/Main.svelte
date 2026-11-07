@@ -3,7 +3,10 @@
   import VariablesSidebar from "./VariablesSidebar.svelte";
   import InputTextarea from "./InputTextarea.svelte";
   import OutputTextarea from "./OutputTextarea.svelte";
-  import Variable from './Variable';
+  import Variable from "./Variable";
+  import StringPart from "./StringPart";
+
+  type AbstractElement = Variable | StringPart;
 
   let template = $state('');
 
@@ -60,8 +63,8 @@
 
   let tokens = $derived.by(templateToTokens);
 
-  const variableNamesFromTokens = () => {
-    const variableNames = [];
+  const astFromTokens = () => {
+    const astElements: AbstractElement[] = [];
     let bracketCount = 0;
     for(const token of tokens) {
       if(token === '{{') {
@@ -70,12 +73,9 @@
         bracketCount--;
       } else {
         if(bracketCount === 1) {
-          variableNames.push(
-            new Variable (
-              token.trim(),
-              ''
-            )
-          );
+          astElements.push(new Variable(token.trim()));
+        } else {
+          astElements.push(new StringPart(token));
         }
       }
       if(bracketCount > 1) throw new Error('Nested brackets are not allowed!');
@@ -83,19 +83,51 @@
     }
     if(bracketCount !== 0) throw new Error('Unclosed brackets!');
 
-    return variableNames;
+    return astElements;
   }
 
-  let variables = $derived.by(variableNamesFromTokens);
+  const errorHandler = (f: () => AbstractElement[]) => {
+    try {
+      const value = f();
+      return value;
+    } catch {
+      return [];
+    }
+  }
+
+  let ast = $derived.by(() => errorHandler(astFromTokens));
+
+  const variableNamesFromAst = () => {
+    const variables = ast.filter(element => element instanceof Variable);
+
+    const dictionary: Record<string, Variable> = {};
+    variables.forEach(variable => dictionary[variable.name] = variable);
+    return Object.keys(dictionary);
+  }
+
+  let variableNames = $derived.by(variableNamesFromAst);
+
+  let variableValues = $state<Record<string, string>>({});
+
+  const outputFromAst = () => {
+    let outputString = '';
+    for(const astElement of ast) {
+      if(astElement instanceof StringPart) outputString += astElement.value;
+      if(astElement instanceof Variable) outputString += (variableValues[astElement.name] || '');
+    }
+    return outputString;
+  }
+
+  let outputText = $derived.by(outputFromAst);
 </script>
 
 <div class="container">
   <ProjectsSidebar />
   <main>
     <InputTextarea bind:value={template} />
-    <OutputTextarea value={tokens.join(', ')} />
+    <OutputTextarea value={outputText} />
   </main>
-  <VariablesSidebar bind:variables={variables} />
+  <VariablesSidebar variableNames={variableNames} bind:variableValues={variableValues}/>
 </div>
 
 <style>

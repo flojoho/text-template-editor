@@ -1,10 +1,8 @@
 
 export default class Variable {
   public name: string;
-  public value: string;
 
-  constructor(name: string, value: string) {
+  constructor(name: string) {
     this.name = name;
-    this.value = value;
   }
 }
