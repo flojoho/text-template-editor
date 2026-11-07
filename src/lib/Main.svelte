@@ -3,6 +3,7 @@
   import VariablesSidebar from "./VariablesSidebar.svelte";
   import InputTextarea from "./InputTextarea.svelte";
   import OutputTextarea from "./OutputTextarea.svelte";
+  import Variable from './Variable';
 
   let template = $state('');
 
@@ -68,7 +69,14 @@
       } else if(token === '}}') {
         bracketCount--;
       } else {
-        if(bracketCount === 1) variableNames.push(token.trim());
+        if(bracketCount === 1) {
+          variableNames.push(
+            new Variable (
+              token.trim(),
+              ''
+            )
+          );
+        }
       }
       if(bracketCount > 1) throw new Error('Nested brackets are not allowed!');
       if(bracketCount < 0) throw new Error('Brackets closed before they were opened!');
@@ -78,16 +86,16 @@
     return variableNames;
   }
 
-  let variableNames = $derived.by(variableNamesFromTokens);
+  let variables = $derived.by(variableNamesFromTokens);
 </script>
 
 <div class="container">
   <ProjectsSidebar />
   <main>
     <InputTextarea bind:value={template} />
-    <OutputTextarea value={variableNames.join(', ')} />
+    <OutputTextarea value={tokens.join(', ')} />
   </main>
-  <VariablesSidebar />
+  <VariablesSidebar bind:variables={variables} />
 </div>
 
 <style>

@@ -1,9 +1,22 @@
 <script lang="ts">
+  import type Variable from './Variable';
   
+  let { variables = $bindable([]) }: {
+    variables: Variable[]
+  } = $props();
 </script>
 
 <aside>
-  tbd
+  {#each variables as variable}
+    <div>
+      <div>
+        {variable.name}
+      </div>
+      <div>
+        <input value={variable.value} />
+      </div>
+    </div>
+  {/each}
 </aside>
 
 <style>
