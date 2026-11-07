@@ -5,63 +5,16 @@
   import OutputTextarea from "./OutputTextarea.svelte";
   import Variable from "./Variable";
   import StringPart from "./StringPart";
+  import { templateToTokens } from "./parsingHelpers"; 
 
   type AbstractElement = Variable | StringPart;
+  type ParseResult =
+  | { ast: AbstractElement[]; error: null }
+  | { ast: []; error: string };
 
-  let template = $state('');
+  let template = $state('try changing the value of this {{variable}} in the text input on the right.\n\nit will automatically insert the value in the output below.');
 
-  const templateToTokens = () => {
-    const tokens = [];
-    let currentToken = '';
-    let possibleSyntaxToken = '';
-
-    for(const char of template) {
-      if(char === '{') {
-        if(possibleSyntaxToken === '{') {
-          if(currentToken !== '') {
-            tokens.push(currentToken);
-            currentToken = '';
-          }
-          tokens.push('{{');
-          possibleSyntaxToken = '';
-          continue;
-        } else {
-          possibleSyntaxToken += '{';
-        }
-        continue;
-      } else if (char === '}') {
-        if(possibleSyntaxToken === '}') {
-          if(currentToken !== '') {
-            tokens.push(currentToken);
-            currentToken = '';
-          }
-          tokens.push('}}');
-          possibleSyntaxToken = '';
-          continue;
-        } else {
-          possibleSyntaxToken += '}';
-        }
-        continue;
-      }
-
-      if(possibleSyntaxToken !== '') {
-        currentToken += possibleSyntaxToken;
-        possibleSyntaxToken = '';
-      }
-
-      currentToken += char;
-    }
-
-    if(possibleSyntaxToken !== '') {
-      tokens.push(currentToken + possibleSyntaxToken);
-    } else if(currentToken !== '') {
-      tokens.push(currentToken);
-    }
-
-    return tokens;
-  }
-
-  let tokens = $derived.by(templateToTokens);
+  let tokens = $derived(templateToTokens(template));
 
   const astFromTokens = () => {
     const astElements: AbstractElement[] = [];
@@ -86,19 +39,22 @@
     return astElements;
   }
 
-  const errorHandler = (f: () => AbstractElement[]) => {
+  const errorHandler = (f: () => AbstractElement[]): ParseResult => {
     try {
-      const value = f();
-      return value;
-    } catch {
-      return [];
+      const ast = f();
+      return { ast, error: null };
+    } catch (e) {
+      let errorMessage = 'Unknown error';
+      if (e instanceof Error) errorMessage = 'Error: ' + e.message;
+      return {ast: [], error: errorMessage};
     }
   }
 
-  let ast = $derived.by(() => errorHandler(astFromTokens));
+  let parseResult = $derived.by(() => errorHandler(astFromTokens));
 
   const variableNamesFromAst = () => {
-    const variables = ast.filter(element => element instanceof Variable);
+    const { ast } = parseResult;
+    const variables = ast.filter(element => element instanceof Variable) as Variable[];
 
     const dictionary: Record<string, Variable> = {};
     variables.forEach(variable => dictionary[variable.name] = variable);
@@ -110,10 +66,11 @@
   let variableValues = $state<Record<string, string>>({});
 
   const outputFromAst = () => {
+    const { ast } = parseResult;
     let outputString = '';
     for(const astElement of ast) {
       if(astElement instanceof StringPart) outputString += astElement.value;
-      if(astElement instanceof Variable) outputString += (variableValues[astElement.name] || '');
+      if(astElement instanceof Variable) outputString += (variableValues[astElement.name] ?? '');
     }
     return outputString;
   }
@@ -125,7 +82,7 @@
   <ProjectsSidebar />
   <main>
     <InputTextarea bind:value={template} />
-    <OutputTextarea value={outputText} />
+    <OutputTextarea value={parseResult.error ?? outputText} />
   </main>
   <VariablesSidebar variableNames={variableNames} bind:variableValues={variableValues}/>
 </div>
