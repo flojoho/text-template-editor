@@ -6,13 +6,12 @@
 
   let template = $state('');
 
-  let tokens = $derived.by(() => {
+  const templateToTokens = () => {
     const tokens = [];
     let currentToken = '';
     let possibleSyntaxToken = '';
 
     for(const char of template) {
-      console.log(currentToken);
       if(char === '{') {
         if(possibleSyntaxToken === '{') {
           if(currentToken !== '') {
@@ -23,7 +22,6 @@
           possibleSyntaxToken = '';
           continue;
         } else {
-          //currentToken += char;
           possibleSyntaxToken += '{';
         }
         continue;
@@ -37,7 +35,6 @@
           possibleSyntaxToken = '';
           continue;
         } else {
-          //currentToken += char;
           possibleSyntaxToken += '}';
         }
         continue;
@@ -57,17 +54,38 @@
       tokens.push(currentToken);
     }
 
-    console.log(tokens);
-
     return tokens;
-  });
+  }
+
+  let tokens = $derived.by(templateToTokens);
+
+  const variableNamesFromTokens = () => {
+    const variableNames = [];
+    let bracketCount = 0;
+    for(const token of tokens) {
+      if(token === '{{') {
+        bracketCount++;
+      } else if(token === '}}') {
+        bracketCount--;
+      } else {
+        if(bracketCount === 1) variableNames.push(token.trim());
+      }
+      if(bracketCount > 1) throw new Error('Nested brackets are not allowed!');
+      if(bracketCount < 0) throw new Error('Brackets closed before they were opened!');
+    }
+    if(bracketCount !== 0) throw new Error('Unclosed brackets!');
+
+    return variableNames;
+  }
+
+  let variableNames = $derived.by(variableNamesFromTokens);
 </script>
 
 <div class="container">
   <ProjectsSidebar />
   <main>
     <InputTextarea bind:value={template} />
-    <OutputTextarea value={tokens.join('\n')} />
+    <OutputTextarea value={variableNames.join(', ')} />
   </main>
   <VariablesSidebar />
 </div>
