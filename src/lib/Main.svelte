@@ -1,12 +1,15 @@
 <script lang="ts">
   import ProjectsSidebar from "./ProjectsSidebar.svelte";
-  import Template from "./Template.svelte";
+  import Project from "./Project.svelte";
+
+  let template = $state('try changing the value of this {{variable}} in the text input on the right.\n\nit will automatically insert the value in the output below.');
+  let variables = $state({});
 </script>
 
 <div class="container">
   <ProjectsSidebar />
   <div class="template-container">
-    <Template />
+    <Project template={template} variables={variables}/>
   </div>
 </div>
 

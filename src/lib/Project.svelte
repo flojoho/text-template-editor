@@ -1,5 +1,4 @@
 <script lang="ts">
-  import ProjectsSidebar from "./ProjectsSidebar.svelte";
   import VariablesSidebar from "./VariablesSidebar.svelte";
   import InputTextarea from "./InputTextarea.svelte";
   import OutputTextarea from "./OutputTextarea.svelte";
@@ -12,7 +11,13 @@
   | { ast: AbstractElement[]; error: null }
   | { ast: []; error: string };
 
-  let template = $state('try changing the value of this {{variable}} in the text input on the right.\n\nit will automatically insert the value in the output below.');
+  let {
+    template = $bindable(''),
+    variables = $bindable({})
+  }: {
+    template: string,
+    variables: Record<string, string>
+  } = $props();
 
   let tokens = $derived(templateToTokens(template));
 
