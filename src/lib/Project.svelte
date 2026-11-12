@@ -5,6 +5,7 @@
   import Variable from "./Variable";
   import StringPart from "./StringPart";
   import { templateToTokens } from "./parsingHelpers"; 
+  import type { ProjectData, Variables } from "./Project";
 
   type AbstractElement = Variable | StringPart;
   type ParseResult =
@@ -12,12 +13,16 @@
   | { ast: []; error: string };
 
   let {
-    template = $bindable(''),
-    variables = $bindable({})
+    project = $bindable({
+      template: '',
+      variables: {}
+    })
   }: {
-    template: string,
-    variables: Record<string, string>
+    project: ProjectData
   } = $props();
+
+  let template = $derived(project.template);
+  let variables = $derived(project.variables);
 
   let tokens = $derived(templateToTokens(template));
 
@@ -68,7 +73,7 @@
 
   let variableNames = $derived.by(variableNamesFromAst);
 
-  let variableValues = $state<Record<string, string>>({});
+  let variableValues = $state<Variables>({});
 
   const outputFromAst = () => {
     const { ast } = parseResult;

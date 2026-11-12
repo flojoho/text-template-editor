@@ -1,10 +1,12 @@
 <script lang="ts">
+  import type { Variables } from "./Project";
+  
   let {
     variableNames,
     variableValues = $bindable({})
   }: {
     variableNames: string[],
-    variableValues: Record<string, string>
+    variableValues: Variables
   } = $props();
 </script>
 
