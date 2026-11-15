@@ -13,10 +13,7 @@
   | { ast: []; error: string };
 
   let {
-    project = $bindable({
-      template: '',
-      variables: {}
-    })
+    project = $bindable()
   }: {
     project: ProjectData
   } = $props();
