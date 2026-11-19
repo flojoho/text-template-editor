@@ -1,19 +1,18 @@
 <script lang="ts">
   import ProjectsSidebar from "./ProjectsSidebar.svelte";
   import ProjectEditor from "./ProjectEditor.svelte";
-  import type { ProjectData } from "./Project";
-  import Storage from "./storage";
+  import Storage from "./Storage.svelte";
 
-  let storageData = $state(Storage.get());
+  let appData = $state(Storage.get());
 
-  let currentProject: ProjectData | null = $state(storageData.projects[0] || null);
+  let currentProject = $derived(appData.currentProject);
 </script>
 
 <div class="container">
-  <ProjectsSidebar />
+  <ProjectsSidebar bind:appData={appData} />
   <div class="template-container">
     {#if currentProject !== null}
-      <ProjectEditor project={currentProject} />
+      <ProjectEditor bind:project={currentProject} />
     {:else}
     <div class="empty">
       &lt;- create a new project or select an existing one in the sidebar

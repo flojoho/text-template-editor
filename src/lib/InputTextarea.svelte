@@ -1,5 +1,5 @@
 <script lang="ts">
-  let { value = $bindable('') } = $props();
+  let { value = $bindable() } = $props();
 </script>
 
 <textarea bind:value={value}>
